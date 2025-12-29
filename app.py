@@ -1,38 +1,33 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
+import spacy
 
-# Page config
-st.set_page_config(
-    page_title="My Streamlit App",
-    page_icon="📊",
-    layout="centered"
+# Load spaCy model
+@st.cache_resource
+def load_model():
+    return spacy.load("en_core_web_sm")
+
+nlp = load_model()
+
+# App title
+st.title("🧠 Named Entity Recognition (NER) using spaCy")
+st.write("Enter a sentence to extract named entities.")
+
+# Text input
+txt = st.text_area(
+    "Enter text",
+    "Virat Kohli was born in Delhi and plays cricket for India"
 )
 
-# Title
-st.title("📊 Streamlit Demo App")
-st.write("This is a simple Streamlit app for deployment.")
+# Process text
+if txt:
+    result = nlp(txt)
 
-# Sidebar
-st.sidebar.header("User Input")
+    st.subheader("🔍 Extracted Entities")
 
-number = st.sidebar.number_input("Enter a number", value=5)
-
-# Main logic
-st.subheader("Square of the number")
-st.write(f"Square of {number} is **{number ** 2}**")
-
-# Sample DataFrame
-st.subheader("Sample Data")
-df = pd.DataFrame({
-    "A": np.random.randint(1, 100, 5),
-    "B": np.random.randint(1, 100, 5)
-})
-
-st.dataframe(df)
-
-# Chart
-st.subheader("Line Chart")
-st.line_chart(df)
-
-st.success("App is running successfully 🚀")
+    if result.ents:
+        for ent in result.ents:
+            st.write(f"**Entity:** {ent.text}")
+            st.write(f"**Label:** {ent.label_}")
+            st.markdown("---")
+    else:
+        st.warning("No entities found.")
